@@ -6,8 +6,8 @@ const scenes = [];
 const seenNames = new Set();
 
 Object.keys(modules).forEach((path) => {
-  // Skip this index file
-  if (path.includes('index.js')) return;
+  // Skip this index file and the effect template
+  if (path.includes('index.js') || path.includes('effectTemplate.js')) return;
 
   const SceneClass = modules[path].default;
 
