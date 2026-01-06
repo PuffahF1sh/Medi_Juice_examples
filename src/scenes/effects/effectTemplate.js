@@ -27,10 +27,8 @@ export default class EffectTemplate extends Phaser.Scene {
 
 
     // --- UI PANEL (Tweakpane) -------------------------------------------
-    if (this.pane) {
-      this.pane.dispose();
-    }
-    this.pane = createPane('Effect Controls');
+    // --- UI PANEL (Tweakpane) -------------------------------------------
+    this.pane = createPane(this, 'Effect Controls');
 
     // 3. DEFINE PARAMETERS TO TWEAK
     const params = {
@@ -48,22 +46,13 @@ export default class EffectTemplate extends Phaser.Scene {
     });
 
     // --- NAVIGATION -----------------------------------------------------
-    // Back to menu
-    this.pane.addButton({ title: 'Back to Menu' }).on('click', () => {
-      this.scene.start('MenuScene');
-    });
+
 
     this.input.keyboard.on('keydown-ESC', () => {
       this.scene.start('MenuScene');
     });
 
-    // Cleanup
-    this.events.once('shutdown', () => {
-      if (this.pane) {
-        this.pane.dispose();
-        this.pane = null;
-      }
-    });
+
   }
 
   update() {

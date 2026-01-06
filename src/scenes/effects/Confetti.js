@@ -32,11 +32,6 @@ export default class Confetti extends Phaser.Scene {
     const centerX = this.cameras.main.centerX;
     const centerY = this.cameras.main.centerY;
 
-    const params = {
-      speed: { min: 400, max: 600 },
-      acceleration: { min: 100, max: 200 },
-    };
-
     // Figma Frame Dimensions
     const frameW = 844;
     const frameH = 390;
@@ -67,42 +62,46 @@ export default class Confetti extends Phaser.Scene {
 
     // --- CONFETTI LAYER ---
     // 1. Create texture for confetti
-    const texture = this.textures.createCanvas('particleTexture', 10, 10);
-    const context = texture.getContext();
-    context.fillStyle = '#ffffff';
-    context.fillRect(0, 0, 10, 10);
-    texture.refresh();
+    // 1. Create texture for confetti
+    if (!this.textures.exists('particleTexture')) {
+      const texture = this.textures.createCanvas('particleTexture', 10, 10);
+      const context = texture.getContext();
+      context.fillStyle = '#ffffff';
+      context.fillRect(0, 0, 10, 10);
+      texture.refresh();
+    }
 
     // 2. Emitter helper
-    const addEmitter = (figmaX, figmaY, anglemin, anglemax) => {
+    const addEmitter = (figmaX, figmaY, angle) => {
       const x = figmaX - halfW;
       const y = figmaY - halfH;
+      const cone = 10;
+      const velo = 1000;
+      const speed = 400;
       const emitter = this.add.particles(x, y, 'particleTexture', {
-        speed: params.speed,
-        angle: { min: anglemin, max: anglemax },
-        accelerationY: params.acceleration,
-        lifespan: { min: 2000, max: 3000 },
+        speed: { min: speed, max: speed * 1.5 },
+        angle: { min: angle - cone, max: angle + cone },
+        accelerationY: { min: 10, max: 100 },
+        lifespan: { min: 500, max: 1000 },
         scaleX: {
           onUpdate: (particle, key, t) => {
-            // console.log('particle', particle, key, t);
-            return Math.sin((t / 1) * Math.PI * 10);
+            return Math.sin((t / 1) * Math.PI * 4);
           },
         },
-        //scale: { start: 0.8, end: 0 },
         rotate: { min: -180, max: 180 },
-        //frequency: 50,
-        quantity: 2,
         tint: [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff],
         emitting: false,
-        gravityY: 400,
+        gravityY: 600,
+        maxVelocityX: velo * 0.5,
+        maxVelocityY: velo,
       });
       this.container.add(emitter);
       return emitter;
     };
 
     // 3. Emitters
-    const emitterLeft = addEmitter(0, frameH, -85, -30);
-    const emitterRight = addEmitter(frameW, frameH, -150, -95);
+    const emitterLeft = addEmitter(0, frameH, -75);
+    const emitterRight = addEmitter(frameW, frameH, 75 - 180);
 
     // Helper to fire confetti
     this.fireConfetti = () => {
@@ -162,10 +161,7 @@ export default class Confetti extends Phaser.Scene {
     });
 
     // --- UI PANEL (Tweakpane) -------------------------------------------
-    if (this.pane) {
-      this.pane.dispose();
-    }
-    this.pane = createPane('Activity Log Controls');
+    this.pane = createPane(this, 'Confetti Controls');
 
     // Reset State
     this.pane.addButton({ title: 'Reset Scene' }).on('click', () => {
@@ -179,31 +175,8 @@ export default class Confetti extends Phaser.Scene {
     confettiParams.addButton({ title: 'Fire Confetti' }).on('click', () => {
       this.fireConfetti();
     });
-    confettiParams.addBinding(params, 'speed', { min: 100, max: 1000 }).on('change', (ev) => {
-      console.log('Updating speed to:', ev.value);
-      emitterLeft.setSpeed({ min: ev.value, max: ev.value * 1.5 });
-      emitterRight.setSpeed({ min: ev.value, max: ev.value * 1.5 });
-    });
-    confettiParams.addBinding(params, 'acceleration', { min: 0, max: 1000 }).on('change', (ev) => {
-      console.log('Updating acceleration to:', ev.value);
-      // Create a range relative to the base value
-      const min = ev.value;
-      const max = ev.value * 2;
-      emitterLeft.setAccelerationY({ min, max });
-      emitterRight.setAccelerationY({ min, max });
-    });
 
-    this.pane.addButton({ title: 'Back to Menu' }).on('click', () => {
-      this.scene.start('MenuScene');
-    });
-
-    // Cleanup
-    this.events.once('shutdown', () => {
-      if (this.pane) {
-        this.pane.dispose();
-        this.pane = null;
-      }
-    });
+    // Cleanup Handled by createPane auto-cleanup
 
     this.input.keyboard.on('keydown-ESC', () => {
       this.scene.start('MenuScene');

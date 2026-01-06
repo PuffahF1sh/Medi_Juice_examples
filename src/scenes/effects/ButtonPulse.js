@@ -38,27 +38,14 @@ export default class ButtonPulse extends Phaser.Scene {
     this.juice.add(buttonImg).pulse(null, { repeat: -1 });
 
     // --- UI PANEL (Tweakpane) -------------------------------------------
-    if (this.pane) {
-      this.pane.dispose();
-    }
-    this.pane = createPane('Effect Controls');
-
-    // Back to menu
-    this.pane.addButton({ title: 'Back to Menu' }).on('click', () => {
-      this.scene.start('MenuScene');
-    });
+    // --- UI PANEL (Tweakpane) -------------------------------------------
+    this.pane = createPane(this, 'Effect Controls');
 
     this.input.keyboard.on('keydown-ESC', () => {
       this.scene.start('MenuScene');
     });
 
-    // Cleanup
-    this.events.once('shutdown', () => {
-      if (this.pane) {
-        this.pane.dispose();
-        this.pane = null;
-      }
-    });
+
   }
 
   update() {

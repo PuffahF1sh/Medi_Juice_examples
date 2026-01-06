@@ -11,11 +11,9 @@ export default class MenuScene extends Phaser.Scene {
 
     // Create the Tweakpane UI
     // specific cleanup of previous instance if it exists (defensive)
-    if (this.pane) {
-      this.pane.dispose();
-    }
+    // Create the Tweakpane UI
 
-    this.pane = createPane('Effect Lab');
+    this.pane = createPane(this, 'Choose a scene');
 
     effects.forEach(sceneClass => {
       this.pane.addButton({ title: sceneClass.name }).on('click', () => {
@@ -23,12 +21,6 @@ export default class MenuScene extends Phaser.Scene {
       });
     });
 
-    // Cleanup the pane when the scene shuts down
-    this.events.once('shutdown', () => {
-      if (this.pane) {
-        this.pane.dispose();
-        this.pane = null;
-      }
-    });
+    // Cleanup is handled by createPane auto-cleanup
   }
 }
