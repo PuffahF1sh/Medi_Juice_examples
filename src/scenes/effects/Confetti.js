@@ -62,12 +62,11 @@ export default class Confetti extends Phaser.Scene {
 
     // --- CONFETTI LAYER ---
     // 1. Create texture for confetti
-    // 1. Create texture for confetti
     if (!this.textures.exists('particleTexture')) {
       const texture = this.textures.createCanvas('particleTexture', 10, 10);
       const context = texture.getContext();
       context.fillStyle = '#ffffff';
-      context.fillRect(0, 0, 10, 10);
+      context.fillRect(0, 0, 5, 5);
       texture.refresh();
     }
 
@@ -78,6 +77,7 @@ export default class Confetti extends Phaser.Scene {
       const cone = 10;
       const velo = 1000;
       const speed = 400;
+      const acceleration = 100;
       const emitter = this.add.particles(x, y, 'particleTexture', {
         speed: { min: speed, max: speed * 1.5 },
         angle: { min: angle - cone, max: angle + cone },
@@ -89,25 +89,18 @@ export default class Confetti extends Phaser.Scene {
           },
         },
         rotate: { min: -180, max: 180 },
-        tint: [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff],
+        tint: [0xFFFAE6, 0xCD0172, 0xFF66B9, 0x7FF9FF, 0x5C58EB, 0x00B0CB],
         emitting: false,
-        gravityY: 600,
+        gravityY: 400,
         maxVelocityX: velo * 0.5,
         maxVelocityY: velo,
+        accelerationX: { min: -acceleration, max: acceleration },
+        accelerationY: { min: -acceleration, max: acceleration },
       });
       this.container.add(emitter);
       return emitter;
     };
 
-    // 3. Emitters
-    const emitterLeft = addEmitter(0, frameH, -75);
-    const emitterRight = addEmitter(frameW, frameH, 75 - 180);
-
-    // Helper to fire confetti
-    this.fireConfetti = () => {
-      emitterLeft.explode(100);
-      emitterRight.explode(100);
-    };
 
     addToContainer('panelLeft', 129.75, 24.75);
     addToContainer('panelRight', 553.75, 24.75);
@@ -123,6 +116,17 @@ export default class Confetti extends Phaser.Scene {
     const btnDischarge = addToContainer('btnDischarge', 547, 311);
     const btnVolume = addToContainer('btnVolume', 764, 20);
     addToContainer('containerNarrow', 249, 18);
+
+    // 3. Emitters
+    const angle = 70;
+    const emitterLeft = addEmitter(0, frameH, -angle);
+    const emitterRight = addEmitter(frameW, frameH, angle - 180);
+
+    // Helper to fire confetti
+    this.fireConfetti = () => {
+      emitterLeft.explode(100);
+      emitterRight.explode(100);
+    };
 
     // --- OVERLAY LAYER (Tablet) ---
     // Using a Rectangle instead of image for performance/simplicity
