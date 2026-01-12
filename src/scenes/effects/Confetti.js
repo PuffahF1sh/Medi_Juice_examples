@@ -57,8 +57,7 @@ export default class Confetti extends Phaser.Scene {
       return img;
     };
 
-    // --- SCENE OBJECTS ---
-    addToContainer('bg', 0, 0);
+    var rect = new Phaser.Geom.Rectangle(0, 0, frameW, frameH);
 
     // --- CONFETTI LAYER ---
     // 1. Create texture for confetti
@@ -66,7 +65,8 @@ export default class Confetti extends Phaser.Scene {
       const texture = this.textures.createCanvas('particleTexture', 10, 10);
       const context = texture.getContext();
       context.fillStyle = '#ffffff';
-      context.fillRect(0, 0, 5, 5);
+      const confettiSize = 8;
+      context.fillRect(0, 0, confettiSize, confettiSize);
       texture.refresh();
     }
 
@@ -74,42 +74,35 @@ export default class Confetti extends Phaser.Scene {
     const addEmitter = (figmaX, figmaY, angle) => {
       const x = figmaX - halfW;
       const y = figmaY - halfH;
-      const cone = 10;
-      const velo = 1000;
-      const speed = 400;
-      const acceleration = 100;
+      const cone = 20;
+      const velocap = 2000;
+      const speed = 800;
       const emitter = this.add.particles(x, y, 'particleTexture', {
-        speed: { min: speed, max: speed * 1.5 },
+        speed: {min: 500, max: speed*1.2},
         angle: { min: angle - cone, max: angle + cone },
-        accelerationY: { min: 10, max: 100 },
-        lifespan: { min: 500, max: 1000 },
-        scaleX: {
-          onUpdate: (particle, key, t) => {
-            return Math.sin((t / 1) * Math.PI * 4);
-          },
+        lifespan: { min: 500, max: 800 },
+        scaleX: { onUpdate: (particle, key, t) =>
+          {return Math.sin((t / 1) * Math.PI * 3);},
         },
-        rotate: { min: -180, max: 180 },
+        rotate: { min: -180, max: 180, random: true },
         tint: [0xFFFAE6, 0xCD0172, 0xFF66B9, 0x7FF9FF, 0x5C58EB, 0x00B0CB],
         emitting: false,
-        gravityY: 400,
-        maxVelocityX: velo * 0.5,
-        maxVelocityY: velo,
-        accelerationX: { min: -acceleration, max: acceleration },
-        accelerationY: { min: -acceleration, max: acceleration },
+        gravityY: 1000,
+        maxVelocityX: { start: velocap, end: 50, ease: 'Sine.easeOut' },
+        maxVelocityY: { start: velocap, end: 50, ease: 'Sine.easeOut' },
+        //deathZone: { type: 'onLeave', source: rect }
       });
       this.container.add(emitter);
       return emitter;
     };
 
-
+    // --- SCENE OBJECTS ---
+    const bg = addToContainer('bg', 0, 0);
     addToContainer('panelLeft', 129.75, 24.75);
     addToContainer('panelRight', 553.75, 24.75);
     const tube = addToContainer('creatureTube', 302, 37);
     const feedingTray = addToContainer('feedingTray', 141.5, 121);
     const taskList = addToContainer('taskListTray', 565, 121);
-
-    // Add particles to container (behind buttons which are added next)
-    //this.container.add(particles);
 
     const btnOpenTablet = addToContainer('btnOpenTablet', 34, 290);
     const btnReturn = addToContainer('btnReturn', 34, 18);
@@ -118,19 +111,20 @@ export default class Confetti extends Phaser.Scene {
     addToContainer('containerNarrow', 249, 18);
 
     // 3. Emitters
-    const angle = 70;
+    const angle = 60;
     const emitterLeft = addEmitter(0, frameH, -angle);
     const emitterRight = addEmitter(frameW, frameH, angle - 180);
 
     // Helper to fire confetti
+    const confettiCount = 100;
     this.fireConfetti = () => {
-      emitterLeft.explode(100);
-      emitterRight.explode(100);
+      emitterLeft.explode(confettiCount);
+      emitterRight.explode(confettiCount);
     };
 
     // --- OVERLAY LAYER (Tablet) ---
     // Using a Rectangle instead of image for performance/simplicity
-    const overlay = this.add.rectangle(-halfW, -halfH, frameW, frameH, 0xCDFDFF, 0.8).setOrigin(0, 0); // Overlay: bg-[#cdfdff] opacity-80
+    const overlay = this.add.rectangle(-halfW, -halfH, frameW, frameH, 0xCDFDFF, 0.8).setOrigin(0, 0);
     overlay.setVisible(true);
     this.container.add(overlay);
 
