@@ -42,12 +42,8 @@ export default class DamageHit extends Phaser.Scene {
     const scale = this.scale.width / bg.width;
     this.mainContainer.setScale(scale);
 
-
     // --- UI PANEL (Tweakpane) -------------------------------------------
-    if (this.pane) {
-      this.pane.dispose();
-    }
-    this.pane = createPane('Effect Controls');
+    this.pane = createPane(this, 'Effect Controls');
 
     // Default params
 
@@ -70,22 +66,13 @@ export default class DamageHit extends Phaser.Scene {
       juice.reset(tablet);
     });
 
-    // Back to menu
-    this.pane.addButton({ title: 'Back to Menu' }).on('click', () => {
-      this.scene.start('MenuScene');
-    });
+
 
     this.input.keyboard.on('keydown-ESC', () => {
       this.scene.start('MenuScene');
     });
 
-    // Cleanup
-    this.events.once('shutdown', () => {
-      if (this.pane) {
-        this.pane.dispose();
-        this.pane = null;
-      }
-    });
+
   }
 
   update() {
