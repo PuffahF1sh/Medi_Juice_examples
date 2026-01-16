@@ -78,11 +78,11 @@ export default class Confetti extends Phaser.Scene {
       const velocap = 2000;
       const speed = 800;
       const emitter = this.add.particles(x, y, 'particleTexture', {
-        speed: {min: 500, max: speed*1.2},
+        speed: { min: 500, max: speed * 1.2 },
         angle: { min: angle - cone, max: angle + cone },
         lifespan: { min: 500, max: 800 },
-        scaleX: { onUpdate: (particle, key, t) =>
-          {return Math.sin((t / 1) * Math.PI * 3);},
+        scaleX: {
+          onUpdate: (particle, key, t) => { return Math.sin((t / 1) * Math.PI * 3); },
         },
         rotate: { min: -180, max: 180, random: true },
         tint: [0xFFFAE6, 0xCD0172, 0xFF66B9, 0x7FF9FF, 0x5C58EB, 0x00B0CB],
