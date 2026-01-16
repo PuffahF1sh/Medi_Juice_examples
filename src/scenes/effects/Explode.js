@@ -49,10 +49,6 @@ export default class Explode extends Phaser.Scene {
     addToContainer('panelLeft', 129.75, 24.75);
     addToContainer('panelRight', 553.75, 24.75);
 
-    const tube = addToContainer('creatureTube_sad', 302, 37);
-    const feedingTray = addToContainer('feedingTray1', 141.5, 121);
-    addToContainer('taskListTray', 565, 121);
-
     // --- Confetti Particles ---
     const particleConfig = {
       lifespan: 500,
@@ -68,6 +64,10 @@ export default class Explode extends Phaser.Scene {
     this.emitter1 = this.add.particles(0, 0, 'particle1', particleConfig);
     this.emitter2 = this.add.particles(0, 0, 'particle2', particleConfig);
     this.container.add([this.emitter1, this.emitter2]);
+
+    const tube = addToContainer('creatureTube_sad', 302, 37);
+    const feedingTray = addToContainer('feedingTray1', 141.5, 121);
+    addToContainer('taskListTray', 565, 121);
 
     // --- Food Inventory UI ---
     const invW = 114, invH = 214;
