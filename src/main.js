@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import MenuScene from "./scenes/MenuScene";
-import effects from "./scenes/effects/index";
+import EffectShowcaseScene from "./scenes/EffectShowcaseScene";
 import phaserJuice from "../phaser3-juice-plugin/dist/phaserJuicePlugin.min.js";
 
 const config = {
@@ -11,7 +11,7 @@ const config = {
   parent: 'game-container',
   scene: [
     MenuScene,
-    ...effects
+    EffectShowcaseScene
   ],
   scale: {
     mode: Phaser.Scale.FIT,

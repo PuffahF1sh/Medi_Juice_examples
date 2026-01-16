@@ -1,19 +1,10 @@
-# Medi_Juice_examples
+# Phaser Effect Lab
 
-Welcome to **Phaser Lab**! This project is a prototyping environment used to experiment with Phaser 3 effects, UI interactions, and "Juice" (visual feedback/polish). It is currently being used to develop components for the "Med | UX Improvements" client project.
+Welcome to **Phaser Effect Lab**! This project is a prototyping environment designed for designers and developers to rapidly create, tweak, and test visual effects for the Phaser 3 engine. It uses a modular architecture that makes effects reusable and easy to manage.
 
 ## Project Status
 
 This project is in active development.
-
-## Project Outline
-
-This project is structured to allow for rapid prototyping of new effects. The main entry point is `src/main.js`, which loads the `MenuScene`. The `MenuScene` dynamically loads all effects from the `src/scenes/effects/` directory.
-
-Key technologies used:
-*   **[Phaser 3](https://phaser.io/)**: The core game engine.
-*   **[Tweakpane](https://tweakpane.github.io/docs/)**: UI for parameter tweaking.
-*   **[Vite](https://vitejs.dev/)**: Fast development build tool.
 
 ## 🚀 Quick Start
 
@@ -22,9 +13,8 @@ Key technologies used:
 - **npm** or **yarn**
 
 ### 2. Installation
-Navigate to the `phaser-lab` directory and install dependencies:
+Navigate to the project directory and install dependencies:
 ```bash
-cd phaser-lab
 npm install
 ```
 
@@ -42,94 +32,98 @@ Open the local URL (usually `http://localhost:5173`) in your browser. You should
 ```
 phaser-lab/
 ├── src/
-│   ├── main.js                 # Entry point: Configures Game & loads scenes
+│   ├── main.js                 # Entry point: Configures the game and scenes
 │   ├── ui/
 │   │   └── createPane.js       # Helper for creating Tweakpane controls
 │   ├── scenes/
-│   │   ├── MenuScene.js        # Main menu listing all effects
-│   │   └── effects/            # 🧪 YOUR PLAYGROUND
-│   │       ├── index.js        # Auto-loader for effect scenes
-│   │       ├── DesignPanelScene.js
-│   │       ├── ButtonPulse.js
-│   │       └── ...
-├── assets/                     # Images and static assets
-├── phaser3-juice-plugin/       # Local plugin for juicy effects
-├── package.json
-└── vite.config.js
+│   │   ├── MenuScene.js        # The main menu that lists all effects
+│   │   └── EffectShowcaseScene.js # A dedicated scene for testing a single effect
+│   ├── effects/                # 🧪 YOUR PLAYGROUND
+│   │   ├── BaseEffect.js       # The base class all effects should extend
+│   │   ├── EffectManager.js    # Manages the lifecycle of effects
+│   │   └── ButtonPulseEffect.js # An example of a reusable effect
+│   └── scenes/effects/
+│       └── index.js            # Auto-loader for effect classes
+├── assets/                     # Images and other static assets
+├── phaser3-juice-plugin/       # A local plugin for juicy effects
+└── package.json
 ```
 
 ---
 
 ## 🛠️ How It Works
 
-### Auto-Magic Effect Loading
-The project is built to make adding new experiments extremely fast. You **do not** need to manually register scenes in `main.js` or `MenuScene.js`.
+### Modular and Reusable Effects
+This project is built around a modular effect architecture. Instead of creating a new scene for each effect, you create a JavaScript class that extends `BaseEffect`. These effect classes encapsulate the logic for a single visual effect, making them reusable across different game objects and scenes.
 
-The file `src/scenes/effects/index.js` automatically detects any `.js` file in the `effects/` directory and exports it. `MenuScene` then dynamically generates buttons for each detected scene.
+### The Effect Showcase
+To test an effect, the `MenuScene` loads it into the `EffectShowcaseScene`. This provides a consistent environment for tweaking the effect's parameters in real-time using Tweakpane.
 
-### UI Controls (Tweakpane)
-We use [Tweakpane](https://tweakpane.github.io/docs/) to create easy debug UIs for tweaking values (speed, gravity, colors) in real-time without reloading.
+### Automatic Effect Loading
+The file `src/scenes/effects/index.js` automatically detects and exports any effect classes you add to it. The `MenuScene` then reads this file to generate the list of available effects.
 
 ---
 
 ## 🧪 How to Create a New Effect
 
-1.  **Create a File**: Add a new file in `src/scenes/effects/`, e.g., `MyNewEffect.js`.
-2.  **Scaffold the Scene**: Use the following template:
+1.  **Create a File**: Add a new file in `src/effects/`, e.g., `MyAwesomeEffect.js`.
+
+2.  **Extend `BaseEffect`**: Use the following template to create your effect class.
 
     ```javascript
-    import Phaser from 'phaser';
-    import { createPane } from '../../ui/createPane';
+    // src/effects/MyAwesomeEffect.js
+    import BaseEffect from './BaseEffect';
 
-    export default class MyNewEffect extends Phaser.Scene {
-      constructor() {
-        super('MyNewEffect'); // Unique Key
+    export default class MyAwesomeEffect extends BaseEffect {
+      constructor(scene, target, config = {}) {
+        super(scene, target);
+        this.params = {
+          // Define your tweakable parameters here
+          intensity: config.intensity || 1.0,
+        };
       }
 
-      create() {
-        // 1. Add visual elements
-        this.add.text(20, 20, 'My New Effect', { fontSize: '24px' });
+      setupPane(pane) {
+        // Add Tweakpane controls for your parameters
+        const folder = pane.addFolder({ title: 'My Awesome Effect' });
+        folder.addInput(this.params, 'intensity', { min: 0, max: 2 })
+          .on('change', () => this.apply());
+      }
 
-        // 2. Setup Tweakpane
-        if (this.pane) this.pane.dispose();
-        this.pane = createPane('My Controls');
+      apply() {
+        // Implement the core logic of your effect here
+        // This method is called whenever a parameter is changed
+        console.log(`Applying effect with intensity: ${this.params.intensity}`);
+        // Example: this.scene.tweens.add({...});
+      }
 
-        // 3. Add interactions
-        this.pane.addButton({ title: 'Back to Menu' }).on('click', () => {
-          this.scene.start('MenuScene');
-        });
-
-        // Cleanup on exit
-        this.events.once('shutdown', () => {
-          if (this.pane) this.pane.dispose();
-        });
+      destroy() {
+        // Optional: Clean up any resources your effect created
       }
     }
     ```
-3.  **Save**: The server will reload, and your new effect will appear in the Main Menu list automatically!
 
-### Using "Juice" Effects
-The custom `phaserJuice` plugin is available in all scenes via `this.juice`.
-```javascript
-// Example: Pulse an object
-const btn = this.add.image(100, 100, 'btn');
-this.juice.pulse(btn, { repeat: -1 });
-```
+3.  **Register the Effect**: Open `src/scenes/effects/index.js` and add your new class to the `effects` array.
+
+    ```javascript
+    // src/scenes/effects/index.js
+    import ButtonPulseEffect from '../../effects/ButtonPulseEffect';
+    import MyAwesomeEffect from '../../effects/MyAwesomeEffect'; // 1. Import it
+
+    const effects = [
+      ButtonPulseEffect,
+      MyAwesomeEffect, // 2. Add it to the array
+    ];
+
+    export default effects;
+    ```
+
+4.  **Save**: The development server will automatically reload, and your new effect will appear in the main menu, ready to be tested in the showcase scene!
 
 ---
 
 ## 📦 Key Libraries
 
 *   **[Phaser 3](https://phaser.io/)**: The core game engine.
-*   **[Tweakpane](https://tweakpane.github.io/docs/)**: UI for parameter tweaking.
-*   **[Vite](https://vitejs.dev/)**: Fast development build tool.
-
-## ⚠️ Troubleshooting
-
-*   **New scene not showing up?**
-    *   Ensure the class is the `default export`.
-    *   Ensure the file is directly inside `src/scenes/effects/`.
-    *   Check the console for "Duplicate scene class" warnings. Each Scene class needs a unique name in `super('Name')`.
-
-*   **UI Controls duplicating?**
-    *   Make sure to call `this.pane.dispose()` in the `shutdown` event listener to clean up the UI when switching scenes.
+*   **[Tweakpane](https://tweakpane.github.io/docs/)**: A UI for tweaking parameters in real-time.
+*   **[Vite](https://vitejs.dev/)**: A fast development build tool.

@@ -1,0 +1,3 @@
+[submodule "phaser3-juice-plugin"]
+	path = phaser3-juice-plugin
+	url = https://github.com/RetroVX/phaser3-juice-plugin
