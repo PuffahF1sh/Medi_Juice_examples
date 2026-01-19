@@ -12,16 +12,14 @@ var config = {
 
 var game = new Phaser.Game(config);
 
-function preload()
-{
-        this.load.setBaseURL('https://cdn.phaserfiles.com/v355');
+function preload() {
+    this.load.setBaseURL('https://cdn.phaserfiles.com/v355');
     this.load.image('spark0', 'assets/particles/blue.png');
     this.load.image('spark1', 'assets/particles/red.png');
     this.load.image('logo', 'assets/sprites/phaser2.png');
 }
 
-function create ()
-{
+function create() {
     var p0 = new Phaser.Math.Vector2(200, 500);
     var p1 = new Phaser.Math.Vector2(200, 200);
     var p2 = new Phaser.Math.Vector2(600, 200);
@@ -33,8 +31,7 @@ function create ()
     var points = [];
     var tangents = [];
 
-    for (var c = 0; c <= max; c++)
-    {
+    for (var c = 0; c <= max; c++) {
         var t = curve.getUtoTmapping(c / max);
 
         points.push(curve.getPoint(t));
@@ -46,8 +43,7 @@ function create ()
     var spark0 = this.add.particles('spark0');
     var spark1 = this.add.particles('spark1');
 
-    for (var i = 0; i < points.length; i++)
-    {
+    for (var i = 0; i < points.length; i++) {
         var p = points[i];
 
         tempVec.copy(tangents[i]).normalizeRightHand().scale(-32).add(p);

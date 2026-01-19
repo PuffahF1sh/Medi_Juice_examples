@@ -119,7 +119,7 @@ export default class WarningPopup extends Phaser.GameObjects.Container {
 
     buttonContainer.on('pointerdown', () => {
       console.log("To the Cockpit clicked!");
-      // Add click logic here
+      this.scene.scene.start('ButtonPulse');
     });
 
     // Center the whole popup container based on x, y (Assuming x,y is center)
