@@ -18,88 +18,70 @@ export default class Firework extends Phaser.Scene {
   create() {
     this.add.text(20, 20, 'Firework', { fontSize: '20px', fill: '#ffffff' });
 
-    // --- Layout & Scaling Constants ---
+    // Constants
     const frameW = 844, frameH = 390;
     const halfW = frameW / 2, halfH = frameH / 2;
 
+    // Container
     this.container = this.add.container(this.cameras.main.centerX, this.cameras.main.centerY);
 
-    const addToContainer = (item, figmaX, figmaY, isVisible = true) => {
-      const obj = (typeof item === 'string') ? this.add.image(0, 0, item) : item;
-      const w = obj.width || 0, h = obj.height || 0;
-      obj.setPosition(figmaX - halfW + w / 2, figmaY - halfH + h / 2);
-      obj.setVisible(isVisible);
-      this.container.add(obj);
-      return obj;
-    };
+    // 1. Background
+    const bg = this.add.image(0, 0, 'bg');
+    this.container.add(bg);
 
-    // --- Scene Objects ---
-    addToContainer('bg', 0, 0);
-
-    // --- OVERLAY LAYER (Tablet) ---
-    // Using a Rectangle instead of image for performance/simplicity
+    // 2. Overlay
     const overlay = this.add.rectangle(-halfW, -halfH, frameW, frameH, 0xC11044E, 0.4).setOrigin(0, 0);
-    overlay.setVisible(true);
     this.container.add(overlay);
 
-    //add a particle layer container same size as the frame
+    // 3. Particle Layer
     this.particleLayer = this.add.container(0, 0);
     this.container.add(this.particleLayer);
 
-    // --- Warning Popup ---
-    // We add it to the container so it scales with everything else
-    const popup = new WarningPopup(this, 0, 0); // 0,0 relative to container center
+    // 4. Warning Popup
+    const popup = new WarningPopup(this, 0, 0);
     this.container.add(popup);
     popup.setVisible(true);
 
-    // Define the path around the Warning Popup (560x175, Radius 10)
-    // Popup is centered at (0,0) in the container
-    const popupW = 560;
-    const popupH = 175;
-    const halfPW = popupW / 2;
-    const halfPH = popupH / 2;
+    // Effect
+    this.createFireworkEffect(560, 175);
 
-    var p0 = new Phaser.Math.Vector2(-halfPW + 5, halfPH - 5);
-    var p1 = new Phaser.Math.Vector2(0, -popupH - 50);
-    var p2 = new Phaser.Math.Vector2(halfPW - 5, halfPH - 5);
+    // Controls & Events
+    this.createControls();
+    this.input.keyboard.on('keydown-ESC', () => this.scene.start('MenuScene'));
 
-    var curve = new Phaser.Curves.QuadraticBezier(p0, p1, p2);
+    // Scale
+    this.updateScale(frameW, frameH);
+    this.scale.on('resize', (gameSize) => this.updateScale(frameW, frameH, gameSize));
+  }
 
-    const totalPoints = 100;
-    const points = [];
-    const tangents = [];
+  createFireworkEffect(width, height) {
+    const halfW = width / 2;
+    const halfH = height / 2;
+    // Define the path around the popup (Radius 10 roughly accounted for by padding)
+    const p0 = new Phaser.Math.Vector2(-halfW + 5, halfH - 5);
+    const p1 = new Phaser.Math.Vector2(0, -height - 50);
+    const p2 = new Phaser.Math.Vector2(halfW - 5, halfH - 5);
 
-    // spacing based on points count
-    const step = 1 / totalPoints;
-
-    for (let c = 0; c <= totalPoints; c++) {
-      const t = c * step;
-      points.push(curve.getPoint(t));
-      tangents.push(curve.getTangent(t));
-    }
+    const curve = new Phaser.Curves.QuadraticBezier(p0, p1, p2);
+    const points = curve.getSpacedPoints(100);
 
     const tempVec = new Phaser.Math.Vector2();
     const emittersArray = [];
 
-    const startScale = 1;
-    const endScale = 0.1;
-
-    for (let i = 0; i < points.length; i++) {
-      const p = points[i];
-
+    points.forEach((p, i) => {
       // Calculate emission angle (outward from edge)
-      // Similar to copypad: copy tangent, normalize right hand, scale, add to point
-      tempVec.copy(tangents[i]).normalizeRightHand().scale(-32).add(p);
+      const tangent = curve.getTangent(i / points.length);
+      tempVec.copy(tangent).normalizeRightHand().scale(-32).add(p);
       const angle = Phaser.Math.RadToDeg(Phaser.Math.Angle.BetweenPoints(p, tempVec));
 
       const texture = (i % 2 === 0) ? 'particle1' : 'particle2';
 
       const emitter = this.add.particles(p.x, p.y, texture, {
         speed: { min: 20, max: 300 },
-        scale: { start: startScale, end: endScale },
+        scale: { start: 1, end: 0.1 },
         maxVelocityX: { start: 2000, end: 50, ease: 'Sine.easeOut' },
         maxVelocityY: { start: 2000, end: 50, ease: 'Sine.easeOut' },
-        opacity: { values: [ 100, 100, 100, 0 ], interpolation: 'catmull', ease: 'linear' },
+        opacity: { values: [100, 100, 100, 0], interpolation: 'catmull', ease: 'linear' },
         rotate: { min: 0, max: 360, random: true },
         angle: angle,
         gravityY: 200,
@@ -108,17 +90,9 @@ export default class Firework extends Phaser.Scene {
         frequency: 100,
       });
       emittersArray.push(emitter);
-    }
+    });
 
     this.particleLayer.add(emittersArray);
-
-    // --- Controls & Inputs ---
-    this.createControls();
-    this.input.keyboard.on('keydown-ESC', () => this.scene.start('MenuScene'));
-
-    // --- Scale Management ---
-    this.updateScale(frameW, frameH);
-    this.scale.on('resize', (gameSize) => this.updateScale(frameW, frameH, gameSize));
   }
 
   updateScale(frameW, frameH, gameSize = this.scale) {
