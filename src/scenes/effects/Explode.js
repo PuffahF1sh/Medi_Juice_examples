@@ -1,4 +1,5 @@
 import { createPane } from '../../ui/createPane';
+import { createFoodInventory } from '../../components/FoodInventory';
 
 export default class Explode extends Phaser.Scene {
   constructor() {
@@ -33,8 +34,7 @@ export default class Explode extends Phaser.Scene {
     const frameW = 844, frameH = 390;
     const halfW = frameW / 2, halfH = frameH / 2;
 
-    this.container = this.add.container(this.cameras.main.centerX, this.cameras.main.centerY);
-
+    // --- Helper Functions ---
     const addToContainer = (item, figmaX, figmaY, isVisible = true) => {
       const obj = (typeof item === 'string') ? this.add.image(0, 0, item) : item;
       const w = obj.width || 0, h = obj.height || 0;
@@ -44,12 +44,15 @@ export default class Explode extends Phaser.Scene {
       return obj;
     };
 
+    // --- Container Setup ---
+    this.container = this.add.container(this.cameras.main.centerX, this.cameras.main.centerY);
+
     // --- Scene Objects ---
     addToContainer('bg', 0, 0);
     addToContainer('panelLeft', 129.75, 24.75);
     addToContainer('panelRight', 553.75, 24.75);
 
-    // --- Confetti Particles ---
+    // Confetti Particles
     const particleConfig = {
       lifespan: 500,
       speed: { min: 150, max: 250 },
@@ -69,69 +72,20 @@ export default class Explode extends Phaser.Scene {
     const feedingTray = addToContainer('feedingTray1', 141.5, 121);
     addToContainer('taskListTray', 565, 121);
 
-    // --- Food Inventory UI ---
-    const invW = 114, invH = 214;
-    const invContainer = this.add.container(0, 0);
-    invContainer.setSize(invW, invH);
-    addToContainer(invContainer, 0, halfH - invH / 2); // Centered vertically
-
-    // Inventory Background
-    const invBg = this.add.graphics();
-    invBg.fillStyle(0xBECCFF, 1);
-    invBg.fillRoundedRect(-invW / 2, -invH / 2, invW, invH, { tl: 0, tr: 8, bl: 0, br: 8 });
-    invBg.lineStyle(2, 0x8D92F5, 1);
-    invBg.strokeRoundedRect(-invW / 2, -invH / 2, invW, invH, { tl: 0, tr: 8, bl: 0, br: 8 });
-    invContainer.add(invBg);
-
-    // Inventory Items
-    const itemKeys = ['emberfruit', 'chameleonSlug', 'elderMoss', null];
-    const itemSize = 44, itemSpacing = 8;
-    const slotColors = [0xFF66B9, 0xFFCB67, 0xAF67DB]; // Pink, Yellow, Purple
-
-    let currentY = -invH / 2 + 7 + itemSize / 2;
-
-    itemKeys.forEach((key, index) => {
-      const slotContainer = this.add.container(itemSize / 2 + itemSpacing, currentY);
-      const itemBg = this.add.graphics();
-      const slotColor = slotColors[index] || 0xE5EBFF; // Default light blue
-
-      itemBg.fillStyle(slotColor, 1);
-      itemBg.fillRoundedRect(-itemSize / 2, -itemSize / 2, itemSize, itemSize, 8);
-      slotContainer.add(itemBg);
-
-      if (key) {
-        const itemIcon = this.add.image(0, 0, key).setDisplaySize(itemSize, itemSize);
-        slotContainer.add(itemIcon);
+    // Food Inventory UI
+    const invContainer = createFoodInventory(this, (key, index) => {
+      if (key === 'elderMoss') {
+        this.fireConfetti();
+        tube.setTexture('creatureTube_happy');
+        feedingTray.setTexture('feedingTray3');
       }
-
-      invContainer.add(slotContainer);
-
-      // Interaction
-      slotContainer.setInteractive(new Phaser.Geom.Rectangle(-itemSize / 2, -itemSize / 2, itemSize, itemSize), Phaser.Geom.Rectangle.Contains);
-      slotContainer.on('pointerdown', () => {
-        this.tweens.add({
-          targets: slotContainer,
-          scale: 0.9,
-          duration: 50,
-          yoyo: true,
-          onComplete: () => {
-            if (key === 'elderMoss') {
-              this.fireConfetti();
-              tube.setTexture('creatureTube_happy');
-              feedingTray.setTexture('feedingTray3');
-            }
-          }
-        });
-      });
-
-      currentY += itemSize + itemSpacing;
     });
-
-    this.container.add(invContainer);
+    addToContainer(invContainer, 0, halfH - 107);
 
     // --- Controls & Inputs ---
     this.createControls();
 
+    // Navigation
     this.input.keyboard.on('keydown-ESC', () => this.scene.start('MenuScene'));
 
     // --- Scale Management ---
@@ -151,10 +105,9 @@ export default class Explode extends Phaser.Scene {
   }
 
   createControls() {
-    this.pane = createPane(this, 'Explode Controls');
-    this.pane.addButton({ title: 'Reset Scene' }).on('click', () => this.scene.restart());
+    const { pane, folder } = createPane(this, 'Explode Controls', 'Explode Controls');
+    this.pane = pane;
 
-    const confettiParams = this.pane.addFolder({ title: 'Confetti' });
-    confettiParams.addButton({ title: 'Fire Confetti' }).on('click', () => this.fireConfetti());
+    folder.addButton({ title: 'Fire Explosion' }).on('click', () => this.fireConfetti());
   }
 }

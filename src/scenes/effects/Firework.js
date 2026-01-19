@@ -18,38 +18,40 @@ export default class Firework extends Phaser.Scene {
   create() {
     this.add.text(20, 20, 'Firework', { fontSize: '20px', fill: '#ffffff' });
 
-    // Constants
+    // --- Layout & Scaling Constants ---
     const frameW = 844, frameH = 390;
     const halfW = frameW / 2, halfH = frameH / 2;
 
-    // Container
+    // --- Container Setup ---
     this.container = this.add.container(this.cameras.main.centerX, this.cameras.main.centerY);
 
-    // 1. Background
+    // --- Scene Objects (Visual Layer Order) ---
+    // Background
     const bg = this.add.image(0, 0, 'bg');
     this.container.add(bg);
 
-    // 2. Overlay
+    // Overlay
     const overlay = this.add.rectangle(-halfW, -halfH, frameW, frameH, 0xC11044E, 0.4).setOrigin(0, 0);
     this.container.add(overlay);
 
-    // 3. Particle Layer
+    // Particle Layer
     this.particleLayer = this.add.container(0, 0);
     this.container.add(this.particleLayer);
 
-    // 4. Warning Popup
+    // Warning Popup
     const popup = new WarningPopup(this, 0, 0);
     this.container.add(popup);
-    popup.setVisible(true);
 
-    // Effect
+    // --- Logic/Effects ---
     this.createFireworkEffect(560, 175);
 
-    // Controls & Events
+    // --- Controls & Inputs ---
     this.createControls();
+
+    // Navigation
     this.input.keyboard.on('keydown-ESC', () => this.scene.start('MenuScene'));
 
-    // Scale
+    // --- Scale Management ---
     this.updateScale(frameW, frameH);
     this.scale.on('resize', (gameSize) => this.updateScale(frameW, frameH, gameSize));
   }
@@ -102,7 +104,8 @@ export default class Firework extends Phaser.Scene {
   }
 
   createControls() {
-    this.pane = createPane(this, 'Firework Controls');
-    this.pane.addButton({ title: 'Reset Scene' }).on('click', () => this.scene.restart());
+    // --- UI PANEL (Tweakpane) ---
+    const { pane } = createPane(this, 'Firework Controls');
+    this.pane = pane;
   }
 }

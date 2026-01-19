@@ -9,14 +9,12 @@ export default class MenuScene extends Phaser.Scene {
   create() {
     this.add.text(20, 20, 'Effect Lab', { fontSize: '24px', color: '#ffffff' });
 
-    // Create the Tweakpane UI
     // specific cleanup of previous instance if it exists (defensive)
-    // Create the Tweakpane UI
-
-    this.pane = createPane(this, 'Choose a scene');
+    const { pane, folder } = createPane(this,'Choose a scene');
+    this.pane = pane;
 
     effects.forEach(sceneClass => {
-      this.pane.addButton({ title: sceneClass.name }).on('click', () => {
+      pane.addButton({ title: sceneClass.name }).on('click', () => {
         this.scene.start(sceneClass.name);
       });
     });

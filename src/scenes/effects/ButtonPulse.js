@@ -1,54 +1,60 @@
-// src/scenes/effects/ButtonPulse.js
 import { createPane } from '../../ui/createPane';
 
 export default class ButtonPulse extends Phaser.Scene {
   constructor() {
-    // IMPORTANT: When duplicating this file, you must:
-    // 1. Rename the class (e.g. 'MyEffect')
-    // 2. Change the key below to match (e.g. super('MyEffect'))
     super('ButtonPulse');
   }
 
   preload() {
-    // Example: load assets you need
+    // Assets
     this.load.image('BG', 'assets/ButtonPulse_BG.png');
     this.load.image('button', 'assets/ButtonPulse_btn.png');
   }
 
   create() {
-    // Title in top-left so you always know your scene
     this.add.text(20, 20, 'ButtonPulse', { fontSize: '20px', fill: '#ffffff' });
 
-    const centerX = this.scale.width / 2;
-    const centerY = this.scale.height / 2;
+    // --- Layout & Scaling Constants ---
+    const frameW = 844;
+    const frameH = 390;
 
-    // --- EFFECT CORE SETUP ----------------------------------------------
-    // Create images positioned relative to container center (0,0)
+    // --- Container Setup ---
+    this.container = this.add.container(this.cameras.main.centerX, this.cameras.main.centerY);
+
+    // --- Scene Objects ---
+    // Background (Visual Layer: Bottom)
     const bg = this.add.image(0, 0, 'BG');
+    this.container.add(bg);
+
+    // Button (Visual Layer: Top)
     const buttonImg = this.add.image(0, 0, 'button');
+    this.container.add(buttonImg);
 
-    // Create container and add images
-    this.mainContainer = this.add.container(centerX, centerY, [bg, buttonImg]);
-
-    // Container must fit the width of the current window
-    // We scale based on the background image width
-    const scale = this.scale.width / bg.width;
-    this.mainContainer.setScale(scale);
-
+    // --- Logic/Effects ---
     this.juice.add(buttonImg).pulse(null, { repeat: -1 });
 
-    // --- UI PANEL (Tweakpane) -------------------------------------------
-    // --- UI PANEL (Tweakpane) -------------------------------------------
-    this.pane = createPane(this, 'Effect Controls');
+    // --- Controls & Inputs ---
+    this.createControls();
 
+    // Navigation
     this.input.keyboard.on('keydown-ESC', () => {
       this.scene.start('MenuScene');
     });
 
-
+    // --- Scale Management ---
+    this.updateScale(frameW, frameH);
+    this.scale.on('resize', (gameSize) => this.updateScale(frameW, frameH, gameSize));
   }
 
-  update() {
-    // Optional per-frame logic
+  updateScale(frameW, frameH, gameSize = this.scale) {
+    const scale = Math.min(gameSize.width / frameW, gameSize.height / frameH) * 0.9;
+    this.container.setScale(scale);
+    this.container.setPosition(gameSize.width / 2, gameSize.height / 2);
+  }
+
+  createControls() {
+    // --- UI PANEL (Tweakpane) ---
+    const { pane, folder } = createPane(this, 'Effect Controls');
+    this.pane = pane;
   }
 }

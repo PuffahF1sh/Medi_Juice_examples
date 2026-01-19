@@ -28,7 +28,8 @@ export default class EffectTemplate extends Phaser.Scene {
 
     // --- UI PANEL (Tweakpane) -------------------------------------------
     // --- UI PANEL (Tweakpane) -------------------------------------------
-    this.pane = createPane(this, 'Effect Controls');
+    const { pane, folder } = createPane(this, 'Effect Controls');
+    this.pane = pane;
 
     // 3. DEFINE PARAMETERS TO TWEAK
     const params = {
@@ -40,7 +41,7 @@ export default class EffectTemplate extends Phaser.Scene {
     // this.pane.addBinding(params, 'intensity', { min: 0, max: 20 });
 
     // 5. ADD ACTION BUTTONS
-    this.pane.addButton({ title: 'Trigger Effect' }).on('click', () => {
+    folder.addButton({ title: 'Trigger Effect' }).on('click', () => {
       // this.juice.shake(target);
       console.log('Trigger effect');
     });
