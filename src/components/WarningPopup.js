@@ -21,28 +21,31 @@ export default class WarningPopup extends Phaser.GameObjects.Container {
       borderWidth: 2
     };
 
+    const halfW = SIZES.width / 2;
+    const halfH = SIZES.height / 2;
+
     // --- Main Container Background ---
     // Shadow (simulated with offset rect)
     const shadowOffset = 4;
     const shadow = scene.add.graphics();
     shadow.fillStyle(COLORS.border, 1);
-    shadow.fillRoundedRect(0, shadowOffset, SIZES.width, SIZES.height, SIZES.radius);
+    shadow.fillRoundedRect(-halfW, -halfH + shadowOffset, SIZES.width, SIZES.height, SIZES.radius);
     this.add(shadow);
 
     // Main Box
     const bg = scene.add.graphics();
     bg.fillStyle(COLORS.bg, 1);
     bg.lineStyle(SIZES.borderWidth, COLORS.border, 1);
-    bg.fillRoundedRect(0, 0, SIZES.width, SIZES.height, SIZES.radius);
-    bg.strokeRoundedRect(0, 0, SIZES.width, SIZES.height, SIZES.radius);
+    bg.fillRoundedRect(-halfW, -halfH, SIZES.width, SIZES.height, SIZES.radius);
+    bg.strokeRoundedRect(-halfW, -halfH, SIZES.width, SIZES.height, SIZES.radius);
     this.add(bg);
 
     // --- Content Container (for centering) ---
     // Using a vertical offset to simulate flex gap
-    let currentY = 24; // Top padding
+    let currentY = -halfH + 24; // Top padding
 
     // Text 1: Mission Complete
-    const titleText = scene.add.text(SIZES.width / 2, currentY, "Mission Complete!", {
+    const titleText = scene.add.text(0, currentY, "Mission Complete!", {
       fontFamily: '"Gluten", sans-serif',
       fontSize: '20px',
       color: '#11044e',
@@ -53,7 +56,7 @@ export default class WarningPopup extends Phaser.GameObjects.Container {
     currentY += titleText.height + 4; // Gap 4px
 
     // Text 2: Body Copy
-    const bodyText = scene.add.text(SIZES.width / 2, currentY, "", {
+    const bodyText = scene.add.text(0, currentY, "", {
       fontFamily: '"Space Grotesk", sans-serif',
       fontSize: '14px',
       color: '#11044e',
@@ -65,36 +68,27 @@ export default class WarningPopup extends Phaser.GameObjects.Container {
       "You’ve cared for 2 creatures and earned enough fuel.",
       "Onto the next planet!"
     ]);
-    // Note: Phaser Text doesn't support bolding parts of a string easily without BBCode or multiple objects.
-    // For simplicity, I'll use standard text. If needed, I can split it.
 
     this.add(bodyText);
 
     currentY += bodyText.height + 12; // Gap/Margin bottom 12px
 
     // --- Button: To the Cockpit ---
-    const buttonWidth = 220; // Approx
-    const buttonHeight = 50; // Approx
-    const buttonX = SIZES.width / 2;
+    const buttonWidth = 220;
+    const buttonHeight = 50;
+    const buttonX = 0;
     const buttonY = currentY + buttonHeight / 2;
 
     const buttonContainer = scene.add.container(buttonX, buttonY);
     this.add(buttonContainer);
 
     // Button Shadow
-    // Inset shadow simulation: darker bottom/right
     const btnBg = scene.add.graphics();
     btnBg.fillStyle(COLORS.buttonBg, 1);
     btnBg.lineStyle(2, COLORS.border, 1);
     btnBg.fillRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 10);
     btnBg.strokeRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 10);
     buttonContainer.add(btnBg);
-
-    // Inset shadow detail (simplified as a bottom highlight/shadow)
-    const btnInset = scene.add.graphics();
-    btnInset.lineStyle(2, COLORS.buttonShadow, 1); // Darker purple
-    // Draw only bottom and right inner
-    // This is hard to do perfectly with graphics lines, skipping for now to keep it clean.
 
     const btnText = scene.add.text(0, 0, "To the Cockpit!", {
       fontFamily: '"Gluten", sans-serif',
@@ -110,7 +104,6 @@ export default class WarningPopup extends Phaser.GameObjects.Container {
 
     buttonContainer.on('pointerover', () => {
       scene.input.setDefaultCursor('pointer');
-      // Hover effect could go here
     });
 
     buttonContainer.on('pointerout', () => {
@@ -122,17 +115,7 @@ export default class WarningPopup extends Phaser.GameObjects.Container {
       this.scene.scene.start('ButtonPulse');
     });
 
-    // Center the whole popup container based on x, y (Assuming x,y is center)
-    // The current drawing is from 0,0 top-left. Let's offset it so x,y is center.
-    this.setPosition(x - SIZES.width / 2, y - SIZES.height / 2);
-
-    // Actually, usually easier to keep container at x,y and offset children.
-    // But since I already drew children at positive coords, I'll essentially set the Pivot or just leave it.
-    // The user passes x,y. If they expect center, I should center it.
-    // Let's adjust children or setSize/DisplayOrigin.
     this.setSize(SIZES.width, SIZES.height);
-    // this.setDisplayOrigin(SIZES.width / 2, SIZES.height / 2); // This affects input hit areas sometimes oddly in Containers.
-
-    // Let's just assume x,y is top-left for now, or adjust externally.
+    this.setPosition(x, y);
   }
 }

@@ -30,17 +30,35 @@ export default class Firework extends Phaser.Scene {
     const bg = this.add.image(0, 0, 'bg');
     this.container.add(bg);
 
-    // Overlay
-    const overlay = this.add.rectangle(-halfW, -halfH, frameW, frameH, 0xC11044E, 0.4).setOrigin(0, 0);
-    this.container.add(overlay);
+    // Overlay (initially hidden)
+    this.overlay = this.add.rectangle(-halfW, -halfH, frameW, frameH, 0x11044e, 0.4).setOrigin(0, 0);
+    this.overlay.setVisible(false);
+    this.container.add(this.overlay);
 
-    // Particle Layer
+    // Particle Layer (initially hidden)
     this.particleLayer = this.add.container(0, 0);
+    this.particleLayer.setVisible(false);
     this.container.add(this.particleLayer);
 
-    // Warning Popup
-    const popup = new WarningPopup(this, 0, 0);
-    this.container.add(popup);
+    // Warning Popup (initially hidden)
+    this.popup = new WarningPopup(this, 0, 0);
+    this.popup.setVisible(false);
+    this.container.add(this.popup);
+
+    // Start Effect Button
+    this.startButton = this.add.container(0, 0);
+    const buttonBg = this.add.rectangle(0, 0, 200, 60, 0x808080, 1);
+    buttonBg.setStrokeStyle(2, 0x606060);
+    const buttonText = this.add.text(0, 0, 'start effect', {
+      fontSize: '20px',
+      fill: '#ffffff',
+      fontFamily: 'Arial'
+    }).setOrigin(0.5);
+    this.startButton.add([buttonBg, buttonText]);
+    this.startButton.setSize(200, 60);
+    this.startButton.setInteractive({ useHandCursor: true });
+    this.startButton.on('pointerdown', () => this.startEffect());
+    this.container.add(this.startButton);
 
     // --- Logic/Effects ---
     this.createFireworkEffect(560, 175);
@@ -54,6 +72,40 @@ export default class Firework extends Phaser.Scene {
     // --- Scale Management ---
     this.updateScale(frameW, frameH);
     this.scale.on('resize', (gameSize) => this.updateScale(frameW, frameH, gameSize));
+  }
+
+  startEffect() {
+    const duration = 600;
+
+    // Hide the start button
+    this.startButton.setVisible(false);
+
+    // Show the overlay with fade-in animation
+    this.overlay.setVisible(true);
+    this.overlay.setAlpha(0);
+    this.tweens.add({
+      targets: this.overlay,
+      alpha: 1,
+      duration: duration,
+      ease: 'Sine.easeOut'
+    });
+
+    // Show the popup with bouncy scale-up animation
+    this.popup.setVisible(true);
+    this.popup.setScale(0);
+    this.tweens.add({
+      targets: this.popup,
+      scale: 1,
+      duration: duration * 0.8,
+      ease: 'Back.easeOut'
+    });
+
+    // wait duration of popup animation
+    this.time.delayedCall(duration, () => {
+      this.particleLayer.setVisible(true);
+      // Start all emitters
+      this.emitters.forEach(emitter => emitter.start());
+    });
   }
 
   createFireworkEffect(width, height) {
@@ -90,10 +142,12 @@ export default class Firework extends Phaser.Scene {
         lifespan: 600,
         blendMode: 'screen',
         frequency: 100,
+        emitting: false,
       });
       emittersArray.push(emitter);
     });
 
+    this.emitters = emittersArray;
     this.particleLayer.add(emittersArray);
   }
 
