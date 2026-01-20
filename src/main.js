@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import MenuScene from "./scenes/MenuScene";
-import effects from "./scenes/effects/index";
+import effects from "./scenes/effects_scenes/index";
 import phaserJuice from "../phaser3-juice-plugin/dist/phaserJuicePlugin.min.js";
 
 const config = {

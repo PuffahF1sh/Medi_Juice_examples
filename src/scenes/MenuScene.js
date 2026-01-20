@@ -1,4 +1,4 @@
-import effects from './effects/index';
+import effects from './effects_scenes/index';
 import { createPane } from '../ui/createPane';
 
 export default class MenuScene extends Phaser.Scene {

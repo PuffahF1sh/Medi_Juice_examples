@@ -1,5 +1,6 @@
 import { createPane } from '../../ui/createPane';
 import { createFoodInventory } from '../../components/FoodInventory';
+import { addExplosion } from '../juice_snippets/juice_explode';
 
 export default class Explode extends Phaser.Scene {
   constructor() {
@@ -52,21 +53,8 @@ export default class Explode extends Phaser.Scene {
     addToContainer('panelLeft', 129.75, 24.75);
     addToContainer('panelRight', 553.75, 24.75);
 
-    // Confetti Particles
-    const particleConfig = {
-      lifespan: 500,
-      speed: { min: 150, max: 250 },
-      scale: { start: 0.8, end: 0 },
-      gravityY: 0,
-      blendMode: 'normal',
-      emitting: false,
-      maxVelocityX: { start: 1000, end: 50, ease: 'Sine.easeOut' },
-      maxVelocityY: { start: 1000, end: 50, ease: 'Sine.easeOut' },
-    };
-
-    this.emitter1 = this.add.particles(0, 0, 'particle1', particleConfig);
-    this.emitter2 = this.add.particles(0, 0, 'particle2', particleConfig);
-    this.container.add([this.emitter1, this.emitter2]);
+    // Explosion Particles
+    this.explosion = addExplosion(this, this.container);
 
     const tube = addToContainer('creatureTube_sad', 302, 37);
     const feedingTray = addToContainer('feedingTray1', 141.5, 121);
@@ -75,7 +63,7 @@ export default class Explode extends Phaser.Scene {
     // Food Inventory UI
     const invContainer = createFoodInventory(this, (key, index) => {
       if (key === 'elderMoss') {
-        this.fireConfetti();
+        this.explosion.fire();
         tube.setTexture('creatureTube_happy');
         feedingTray.setTexture('feedingTray3');
       }
@@ -93,9 +81,8 @@ export default class Explode extends Phaser.Scene {
     this.scale.on('resize', (gameSize) => this.updateScale(frameW, frameH, gameSize));
   }
 
-  fireConfetti() {
-    this.emitter1.explode(8);
-    this.emitter2.explode(8);
+  fireExplosion() {
+    this.explosion.fire();
   }
 
   updateScale(frameW, frameH, gameSize = this.scale) {
@@ -108,6 +95,6 @@ export default class Explode extends Phaser.Scene {
     const { pane, folder } = createPane(this, 'Explode Controls', 'Explode Controls');
     this.pane = pane;
 
-    folder.addButton({ title: 'Fire Explosion' }).on('click', () => this.fireConfetti());
+    folder.addButton({ title: 'Fire Explosion' }).on('click', () => this.fireExplosion());
   }
 }

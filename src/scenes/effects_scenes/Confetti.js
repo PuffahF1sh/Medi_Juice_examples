@@ -1,4 +1,5 @@
 import { createPane } from '../../ui/createPane';
+import { addConfetti } from '../juice_snippets/juice_confetti';
 
 export default class Confetti extends Phaser.Scene {
   constructor() {
@@ -47,39 +48,6 @@ export default class Confetti extends Phaser.Scene {
       return img;
     };
 
-    const addEmitter = (figmaX, figmaY, angle) => {
-      const x = figmaX - halfW;
-      const y = figmaY - halfH;
-      const cone = 20;
-      const velocap = 2000;
-      const speed = 800;
-      const emitter = this.add.particles(x, y, 'particleTexture', {
-        speed: { min: 500, max: speed * 1.2 },
-        angle: { min: angle - cone, max: angle + cone },
-        lifespan: { min: 500, max: 800 },
-        scaleX: {
-          onUpdate: (particle, key, t) => { return Math.sin((t / 1) * Math.PI * 3); },
-        },
-        rotate: { min: -180, max: 180, random: true },
-        tint: [0xFFFAE6, 0xCD0172, 0xFF66B9, 0x7FF9FF, 0x5C58EB, 0x00B0CB],
-        emitting: false,
-        gravityY: 1000,
-        maxVelocityX: { start: velocap, end: 50, ease: 'Sine.easeOut' },
-        maxVelocityY: { start: velocap, end: 50, ease: 'Sine.easeOut' },
-      });
-      this.container.add(emitter);
-      return emitter;
-    };
-
-    // --- Particle Texture Setup ---
-    if (!this.textures.exists('particleTexture')) {
-      const texture = this.textures.createCanvas('particleTexture', 10, 10);
-      const context = texture.getContext();
-      context.fillStyle = '#ffffff';
-      const confettiSize = 8;
-      context.fillRect(0, 0, confettiSize, confettiSize);
-      texture.refresh();
-    }
 
     // --- Container Setup ---
     this.container = this.add.container(this.cameras.main.centerX, this.cameras.main.centerY);
@@ -99,9 +67,7 @@ export default class Confetti extends Phaser.Scene {
     addToContainer('containerNarrow', 249, 18);
 
     // Emitters
-    const angle = 60;
-    const emitterLeft = addEmitter(0, frameH, -angle);
-    const emitterRight = addEmitter(frameW, frameH, angle - 180);
+    this.confetti = addConfetti(this, this.container, frameW, frameH);
 
     // Overlay Layer (Tablet)
     const overlay = this.add.rectangle(-halfW, -halfH, frameW, frameH, 0xCDFDFF, 0.8).setOrigin(0, 0);
@@ -120,8 +86,7 @@ export default class Confetti extends Phaser.Scene {
 
     // --- Logic/Effects ---
     this.fireConfetti = () => {
-      emitterLeft.explode(100);
-      emitterRight.explode(100);
+      this.confetti.fire();
     };
 
     btnSave.on('pointerdown', () => {
